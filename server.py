@@ -5,7 +5,6 @@ import os
 import json
 import base64
 
-from twisted.python import log
 from twisted.internet import defer
 from twisted.internet import reactor
 
@@ -20,7 +19,7 @@ import config
 
 TEAMCITY_LOGIN = os.environ['TEAMCITY_LOGIN']
 TEAMCITY_PASSWORD = os.environ['TEAMCITY_PASSWORD']
-TEAMCITY_URL = 'http://teamcity.wargaming.net'
+TEAMCITY_URL = os.environ['TEAMCITY_URL']
 
 
 def download_page(url):
@@ -39,7 +38,6 @@ def download_page(url):
 def get_build_type_info(request):
     build_type_url = '%s/httpAuth/app/rest/buildTypes/id:%s/builds/count:1' % \
         (TEAMCITY_URL, request.args.get('buildTypeId')[0])
-    log.msg('buildTypeUrl: %s' % build_type_url)
     response = yield download_page(build_type_url)
     request._response = response
 
