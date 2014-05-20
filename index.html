@@ -3,13 +3,16 @@
 <html>
     <head>
         <script type="text/javascript" src="static/zepto.js"></script>
+        <script type="text/javascript" src="static/underscore.js"></script>
         <script type="text/javascript" src="static/teamcity.js"></script>
 
         <style>
             .build {
                 border: 1px solid black;
-                padding: 10px;
-                width: 30%;
+                padding: 8px;
+                margin: 4px;
+                width: 200px;
+                display: inline-block;
             }
 
             .build-success {
@@ -19,14 +22,21 @@
             .build-failed {
                 background: OrangeRed;
             }
+
+            .build-title {
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
         </style>
     </head>
 
-    <body>
-        <div id="Wgnps_UnittestTrunkPsui" class="build">
+    <body></body>
+
+    <script id="build-template" type="text/template">
+        <div id="<%= id %>" class="build">
             <div class="build-title"></div>
             <div class="build-triggered-by"></div>
             <div class="build-status-text"></div>
         </div>
-    </body>
+    </script>
 </html>

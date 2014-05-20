@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import json
 import base64
 
 from twisted.python import log
@@ -13,6 +14,8 @@ from twisted.web.server import Site
 from twisted.web.static import File
 from twisted.web.client import getPage
 from twisted.web.resource import Resource
+
+import config
 
 
 TEAMCITY_LOGIN = os.environ['TEAMCITY_LOGIN']
@@ -38,7 +41,7 @@ def get_build_type_info(request):
         (TEAMCITY_URL, request.args.get('buildTypeId')[0])
     log.msg('buildTypeUrl: %s' % build_type_url)
     response = yield download_page(build_type_url)
-    request.teamcity_response = response
+    request._response = response
 
     defer.returnValue(request)
 
@@ -48,15 +51,21 @@ def get_running_builds_info(request):
     running_builds_url = '%s/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=running:true' % \
         (TEAMCITY_URL, request.args.get('buildTypeId')[0])
     response = yield download_page(running_builds_url)
-    request.teamcity_response = response
+    request._response = response
 
     defer.returnValue(request)
+
+
+def prepare_config(request):
+    request._response = json.dumps({'buildMatrix': config.BUILD_MATRIX})
+
+    return request
 
 
 def reply(request):
     request.setResponseCode(200)
     request.setHeader('Content-Type', 'application/json')
-    request.write(request.teamcity_response)
+    request.write(request._response)
     request.finish()
 
     return request
@@ -86,6 +95,18 @@ class RunningBuildsResource(Resource):
         return server.NOT_DONE_YET
 
 
+class ConfigResource(Resource):
+    isLeaf = True
+
+    def render_GET(self, request):
+        deferred = defer.Deferred()
+        deferred.addCallback(prepare_config)
+        deferred.addCallback(reply)
+        deferred.callback(request)
+
+        return server.NOT_DONE_YET
+
+
 class MonitorResource(Resource):
     isLeaf = False
 
@@ -103,6 +124,7 @@ root = MonitorResource()
 root.putChild('build_type', BuildTypeReource())
 root.putChild('running_builds', RunningBuildsResource())
 root.putChild('static', File('static'))
+root.putChild('config', ConfigResource())
 
 factory = Site(root)
 reactor.listenTCP(8000, factory)
