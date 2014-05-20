@@ -59,7 +59,7 @@
         });
 
         function onGetBuildInfoSuccess(data) {
-            var el = $('#' + data.buildType.id);
+            var el = $('#' + buildTypeId);
 
             el.removeClass(classBuildFailed, classBuildSuccess);
             if (data.status == 'SUCCESS') {
