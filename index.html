@@ -12,8 +12,15 @@
 
     <script id="build-template" type="text/template">
         <div id="<%= id %>" class="build">
-            <div class="build-title"></div>
-            <div class="build-status-text"></div>
+            <div class="build-status-info">
+                <div class="build-title"></div>
+                <div class="build-status-text"></div>
+            </div>
+
+            <div class="build-changes-info">
+                <div>Commiter:&nbsp;<span class="build-triggered-by"></span></div>
+                <div>Revision:&nbsp;<span class="build-revision"></span></div>
+            </div>
         </div>
     </script>
 </html>

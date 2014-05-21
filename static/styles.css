@@ -2,8 +2,10 @@
     border: 1px solid black;
     padding: 8px;
     margin: 4px;
-    width: 200px;
+    width: 240px;
     display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .build-success {
@@ -17,4 +19,9 @@
 .build-title {
     margin-bottom: 10px;
     font-weight: bold;
+}
+
+.build-changes-info {
+    font-style:italic;
+    padding-top: 5px;
 }

@@ -20,86 +20,77 @@ import config
 TEAMCITY_LOGIN = os.environ['TEAMCITY_LOGIN']
 TEAMCITY_PASSWORD = os.environ['TEAMCITY_PASSWORD']
 TEAMCITY_URL = os.environ['TEAMCITY_URL']
+TEAMCITY_REST_API_URL = '%s/httpAuth/app/rest' % TEAMCITY_URL
 
 
-def download_page(url):
-    basic_auth = base64.encodestring('%s:%s' % \
-                                     (TEAMCITY_LOGIN, TEAMCITY_PASSWORD))
-    basic_auth = basic_auth.strip()
-    request_headers = {
-        'Accept': 'application/json',
-        'Authorization': 'Basic %s' % basic_auth,
-    }
-
-    return getPage(url=url, headers=request_headers)
-
-
-@defer.inlineCallbacks
-def get_build_type_info(request):
-    build_type_url = '%s/httpAuth/app/rest/buildTypes/id:%s/builds/count:1' % \
-        (TEAMCITY_URL, request.args.get('buildTypeId')[0])
-    response = yield download_page(build_type_url)
-    request._response = response
-
-    defer.returnValue(request)
-
-
-@defer.inlineCallbacks
-def get_running_builds_info(request):
-    running_builds_url = '%s/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=running:true' % \
-        (TEAMCITY_URL, request.args.get('buildTypeId')[0])
-    response = yield download_page(running_builds_url)
-    request._response = response
-
-    defer.returnValue(request)
-
-
-def prepare_config(request):
-    request._response = json.dumps({'buildMatrix': config.BUILD_MATRIX})
-
-    return request
-
-
-def reply(request):
-    request.setResponseCode(200)
-    request.setHeader('Content-Type', 'application/json')
-    request.write(request._response)
-    request.finish()
-
-    return request
-
-
-class BuildTypeReource(Resource):
+class BaseResource(Resource):
     isLeaf = True
+    REQUEST_URL = None
+
+    def download_page(self, url):
+        basic_auth = base64.encodestring('%s:%s' % (TEAMCITY_LOGIN,
+                                                    TEAMCITY_PASSWORD))
+        basic_auth = basic_auth.strip()
+        request_headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Basic %s' % basic_auth,
+        }
+
+        return getPage(url=url, headers=request_headers)
+
+    def generate_request_url(self, request):
+        build_type_id = request.args.get('buildTypeId')[0]
+        request._request_url = self.REQUEST_URL % (TEAMCITY_REST_API_URL,
+                                                   build_type_id)
+
+        return request
+
+    @defer.inlineCallbacks
+    def process(self, request):
+        request._response = yield self.download_page(request._request_url)
+
+        defer.returnValue(request)
+
+    def reply(self, request):
+        request.setResponseCode(200)
+        request.setHeader('Content-Type', 'application/json')
+        request.write(request._response)
+        request.finish()
+
+        return request
 
     def render_GET(self, request):
         deferred = defer.Deferred()
-        deferred.addCallback(get_build_type_info)
-        deferred.addCallback(reply)
+        deferred.addCallback(self.generate_request_url)
+        deferred.addCallback(self.process)
+        deferred.addCallback(self.reply)
         deferred.callback(request)
 
         return server.NOT_DONE_YET
 
 
-class RunningBuildsResource(Resource):
-    isLeaf = True
+class BuildTypeReource(BaseResource):
+    REQUEST_URL = '%s/buildTypes/id:%s/builds/count:1'
+
+
+class BuildChangesReource(BaseResource):
+    REQUEST_URL = '%s/changes/buildType:(id:%s)'
+
+
+class RunningBuildsResource(BaseResource):
+    REQUEST_URL = '%s/buildTypes/id:%s/builds/?locator=running:true'
+
+
+class ConfigResource(BaseResource):
+    def prepare_config(self, request):
+        request._response = json.dumps({'buildsLayout': config.BUILDS_LAYOUT})
+
+        return request
 
     def render_GET(self, request):
         deferred = defer.Deferred()
-        deferred.addCallback(get_running_builds_info)
-        deferred.addCallback(reply)
-        deferred.callback(request)
-
-        return server.NOT_DONE_YET
-
-
-class ConfigResource(Resource):
-    isLeaf = True
-
-    def render_GET(self, request):
-        deferred = defer.Deferred()
-        deferred.addCallback(prepare_config)
-        deferred.addCallback(reply)
+        deferred.addCallback(self.prepare_config)
+        deferred.addCallback(self.reply)
         deferred.callback(request)
 
         return server.NOT_DONE_YET
@@ -120,6 +111,7 @@ class MonitorResource(Resource):
 
 root = MonitorResource()
 root.putChild('build_type', BuildTypeReource())
+root.putChild('build_changes', BuildChangesReource())
 root.putChild('running_builds', RunningBuildsResource())
 root.putChild('static', File('static'))
 root.putChild('config', ConfigResource())
