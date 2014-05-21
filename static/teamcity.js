@@ -8,13 +8,15 @@
 
         classBuildSuccess = 'build-success',
         classBuildFailed = 'build-failed',
+        classBuildBlink = 'build-blink',
         classBuildRunning = 'build-running',
 
         allBuildTypes = [],
 
         POLLING_INTERVAL_BUILD_GENERIC_INFO = 10000,
         POLLING_INTERVAL_BUILD_CHANGES_INFO = 10000,
-        POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000;
+        POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000,
+        POLLING_INTERVAL_BUILD_BLINKING = 1000;
 
 
     function setupBuildsPolling() {
@@ -28,6 +30,28 @@
                            POLLING_INTERVAL_BUILD_CHANGES_INFO);
         global.setInterval(updateBuildRunningInfo,
                            POLLING_INTERVAL_BUILD_RUNNING_INFO);
+        global.setInterval(blinkFailedBuilds,
+                           POLLING_INTERVAL_BUILD_BLINKING);
+    }
+
+
+    function blinkFailedBuilds() {
+        /*
+        Blink failed builds.
+        */
+
+        for (var i=0; i<allBuildTypes.length; i++) {
+            var el = $('#' + allBuildTypes[i]);
+
+            if (el.hasClass(classBuildRunning) || el.hasClass(classBuildSuccess)) {
+                el.removeClass(classBuildBlink);
+                continue;
+            } else if (el.hasClass(classBuildFailed)) {
+                el.removeClass(classBuildFailed).addClass(classBuildBlink);
+            } else if (el.hasClass(classBuildBlink)) {
+                el.removeClass(classBuildBlink).addClass(classBuildFailed);
+            }
+        }
     }
 
 
