@@ -16,9 +16,19 @@
     background: OrangeRed;
 }
 
+.build-running {
+    background: gold;
+}
+
 .build-title {
     margin-bottom: 10px;
     font-weight: bold;
+    display: inline-block;
+}
+
+.build-percentages {
+    display: inline-block;
+    font-size: large;
 }
 
 .build-changes-info {

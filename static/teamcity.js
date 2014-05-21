@@ -4,19 +4,30 @@
         selectorBuildTriggeredBy = '.build-triggered-by',
         selectorBuildRevision = '.build-revision',
         selectorBuildTemplate = '#build-template',
+        selectorBuildPercentages = '.build-percentages',
 
         classBuildSuccess = 'build-success',
-        classBuildFailed = 'build-failed';
+        classBuildFailed = 'build-failed',
+        classBuildRunning = 'build-running',
+
+        allBuildTypes = [],
+
+        POLLING_INTERVAL_BUILD_GENERIC_INFO = 10000,
+        POLLING_INTERVAL_BUILD_CHANGES_INFO = 10000,
+        POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000;
 
 
-    function ajax(url, sync, successCallback, errorCallback) {
-        $.ajax({
-            type: 'GET',
-            sync: sync,
-            url: url,
-            error: errorCallback,
-            success: successCallback
-        });
+    function setupBuildsPolling() {
+        /*
+        Setup timers for polling build changes.
+        */
+
+        global.setInterval(updateBuildGenericInfo,
+                           POLLING_INTERVAL_BUILD_GENERIC_INFO);
+        global.setInterval(updateBuildChangesInfo,
+                           POLLING_INTERVAL_BUILD_CHANGES_INFO);
+        global.setInterval(updateBuildRunningInfo,
+                           POLLING_INTERVAL_BUILD_RUNNING_INFO);
     }
 
 
@@ -25,20 +36,31 @@
         Generates DOM elements for each build and updates builds info.
         */
 
-        ajax('/config/', true, onGetConfigSuccess, onGetConfigError);
+        $.ajax({
+            type: 'GET',
+            sync: true,
+            url: '/config/',
+            error: onGetConfigError,
+            success: onGetConfigSuccess
+        });
 
         function onGetConfigSuccess(data) {
             var body = $('body'),
                 buildTemplate = _.template($(selectorBuildTemplate).html());
 
             _.each(data.buildsLayout, function(row) {
-                _.each(row, function(build) {
-                    body.append(buildTemplate(build));
-                    updateBuildGenericInfo(build.id);
-                    updateBuildChangesInfo(build.id);
+                _.each(row, function(buildType) {
+                    allBuildTypes.push(buildType.id);
+                    body.append(buildTemplate(buildType));
                 });
                 body.append($('<br/>'));
             });
+
+            // immediately update builds info
+            updateBuildGenericInfo();
+            updateBuildChangesInfo();
+
+            setupBuildsPolling()
         }
 
         function onGetConfigError(xhr, type) {
@@ -47,38 +69,73 @@
     }
 
 
-    function updateBuildChangesInfo(buildTypeId) {
+    function updateBuildRunningInfo() {
+        function onGetBuildRunningInfoSuccess(data) {;
+            var el = $('#' + this.buildTypeId);
+
+            if (data.count) {
+                data = data.build[0];
+
+                el.addClass(classBuildRunning);
+                el.find(selectorBuildPercentages).html('(' + data.percentageComplete + '%)');
+            } else {
+                el.removeClass(classBuildRunning);
+                el.find(selectorBuildPercentages).html('');
+            }
+        }
+
+        function onGetBuildRunningInfoError(xhr, type) {}
+
+        _.each(allBuildTypes, function(buildTypeId) {
+            $.ajax({
+                type: 'GET',
+                sync: false,
+                url: '/running_builds/?buildTypeId=' + buildTypeId,
+                context: {'buildTypeId': buildTypeId},
+                error: onGetBuildRunningInfoError,
+                success: onGetBuildRunningInfoSuccess
+            });
+        });
+    }
+
+
+    function updateBuildChangesInfo() {
         /*
         Requests build changes info and updates corresponding DOM element with
         changes info.
         */
 
-        ajax('/build_changes/?buildTypeId=' + buildTypeId, false,
-             onGetBuildChangesSuccess, onGetBuildChangesError);
-
-        function onGetBuildChangesSuccess(data) {
-            var el = $('#' + buildTypeId),
+        function onGetBuildChangesInfoSuccess(data) {
+            var el = $('#' + this.buildTypeId),
                 commiter = data.user ? data.user.name : data.username;
 
             el.find(selectorBuildTriggeredBy).html(commiter);
             el.find(selectorBuildRevision).html(data.version);
         }
 
-        function onGetBuildChangesError(xhr, type) {}
+        function onGetBuildChangesInfoError(xhr, type) {}
+
+        _.each(allBuildTypes, function(buildTypeId) {
+            $.ajax({
+                type: 'GET',
+                sync: false,
+                url: '/build_changes/?buildTypeId=' + buildTypeId,
+                context: {'buildTypeId': buildTypeId},
+                error: onGetBuildChangesInfoError,
+                success: onGetBuildChangesInfoSuccess
+            });
+        });
     }
 
 
-    function updateBuildGenericInfo(buildTypeId) {
+    function updateBuildGenericInfo() {
         /*
         Requests buildType info and updates corresponding DOM element with
         build name, status, statusText.
         */
 
-        ajax('/build_type/?buildTypeId=' + buildTypeId, false,
-             onGetBuildInfoSuccess, onGetBuildInfoError);
-
-        function onGetBuildInfoSuccess(data) {
-            var el = $('#' + buildTypeId);
+        function onGetBuildStatusInfoSuccess(data) {
+            var el = $('#' + this.buildTypeId);
 
             el.removeClass(classBuildFailed, classBuildSuccess);
             if (data.status == 'SUCCESS') {
@@ -91,7 +148,18 @@
             el.find(selectorBuildStatusText).html(data.statusText);
         }
 
-        function onGetBuildInfoError(xhr, type) {}
+        function onGetBuildStatusInfoError(xhr, type) {}
+
+        _.each(allBuildTypes, function(buildTypeId) {
+            $.ajax({
+                type: 'GET',
+                sync: false,
+                url: '/build_type/?buildTypeId=' + buildTypeId,
+                context: {'buildTypeId': buildTypeId},
+                error: onGetBuildStatusInfoError,
+                success: onGetBuildStatusInfoSuccess
+            });
+        });
     }
 
 
