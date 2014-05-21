@@ -5,6 +5,7 @@
         selectorBuildRevision = '.build-revision',
         selectorBuildTemplate = '#build-template',
         selectorBuildPercentages = '.build-percentages',
+        selectorAlarm = '#alarm-sound',
 
         classBuildSuccess = 'build-success',
         classBuildFailed = 'build-failed',
@@ -168,6 +169,7 @@
             } else {
                 el.removeClass(classBuildSuccess);
                 el.addClass(classBuildFailed);
+                document.getElementById(selectorAlarm).play();
             }
 
             el.find(selectorBuildTitle).html(data.buildType.name);
