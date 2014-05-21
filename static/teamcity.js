@@ -13,7 +13,7 @@
 
         allBuildTypes = [],
 
-        POLLING_INTERVAL_BUILD_GENERIC_INFO = 10000,
+        POLLING_INTERVAL_BUILD_STATUS_INFO = 10000,
         POLLING_INTERVAL_BUILD_CHANGES_INFO = 10000,
         POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000,
         POLLING_INTERVAL_BUILD_BLINKING = 1000;
@@ -24,8 +24,8 @@
         Setup timers for polling build changes.
         */
 
-        global.setInterval(updateBuildGenericInfo,
-                           POLLING_INTERVAL_BUILD_GENERIC_INFO);
+        global.setInterval(updateBuildStatusInfo,
+                           POLLING_INTERVAL_BUILD_STATUS_INFO);
         global.setInterval(updateBuildChangesInfo,
                            POLLING_INTERVAL_BUILD_CHANGES_INFO);
         global.setInterval(updateBuildRunningInfo,
@@ -81,7 +81,7 @@
             });
 
             // immediately update builds info
-            updateBuildGenericInfo();
+            updateBuildStatusInfo();
             updateBuildChangesInfo();
 
             setupBuildsPolling()
@@ -100,6 +100,7 @@
             if (data.count) {
                 data = data.build[0];
 
+                el.removeClass(classBuildSuccess);
                 el.addClass(classBuildRunning);
                 el.find(selectorBuildPercentages).html('(' + data.percentageComplete + '%)');
             } else {
@@ -152,7 +153,7 @@
     }
 
 
-    function updateBuildGenericInfo() {
+    function updateBuildStatusInfo() {
         /*
         Requests buildType info and updates corresponding DOM element with
         build name, status, statusText.
@@ -161,10 +162,11 @@
         function onGetBuildStatusInfoSuccess(data) {
             var el = $('#' + this.buildTypeId);
 
-            el.removeClass(classBuildFailed, classBuildSuccess);
             if (data.status == 'SUCCESS') {
+                el.removeClass(classBuildFailed);
                 el.addClass(classBuildSuccess);
             } else {
+                el.removeClass(classBuildSuccess);
                 el.addClass(classBuildFailed);
             }
 
