@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import json
 import base64
+from optparse import OptionParser
 
 from twisted.internet import defer
 from twisted.internet import reactor
@@ -109,13 +111,26 @@ class MonitorResource(Resource):
         return Resource.getChild(self, name, request)
 
 
-root = MonitorResource()
-root.putChild('build_type', BuildTypeReource())
-root.putChild('build_changes', BuildChangesReource())
-root.putChild('running_builds', RunningBuildsResource())
-root.putChild('static', File('static'))
-root.putChild('config', ConfigResource())
+def main(args):
+    parser = OptionParser(usage='%prog ARGUMENTS')
+    parser.add_option('-p', '--port',
+                      action='store',
+                      help='TCP port to listen to')
+    options, args = parser.parse_args()
+    if not options.port:
+        parser.error('Specify TCP port to listen to')
 
-factory = Site(root)
-reactor.listenTCP(8000, factory)
-reactor.run()
+    root = MonitorResource()
+    root.putChild('build_type', BuildTypeReource())
+    root.putChild('build_changes', BuildChangesReource())
+    root.putChild('running_builds', RunningBuildsResource())
+    root.putChild('static', File('static'))
+    root.putChild('config', ConfigResource())
+
+    factory = Site(root)
+    reactor.listenTCP(int(options.port), factory)
+    reactor.run()
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
