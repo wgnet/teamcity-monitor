@@ -9,15 +9,22 @@
 
         classBuildSuccess = 'build-success',
         classBuildFailed = 'build-failed',
-        classBuildBlink = 'build-blink',
         classBuildRunning = 'build-running',
 
         allBuildTypes = [],
 
-        POLLING_INTERVAL_BUILD_STATUS_INFO = 10000,
+        COLOR_RED = 'rgb(255, 69, 0)',
+        COLOR_GRAY = 'rgb(220, 220, 220)',
+
+        POLLING_INTERVAL_BUILD_STATUS_INFO = 8000,
         POLLING_INTERVAL_BUILD_CHANGES_INFO = 10000,
         POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000,
         POLLING_INTERVAL_BUILD_BLINKING = 1000;
+
+
+    function resetCustomColor(el) {
+        el.css('background-color', '');
+    }
 
 
     function setupBuildsPolling() {
@@ -27,8 +34,8 @@
 
         global.setInterval(updateBuildStatusInfo,
                            POLLING_INTERVAL_BUILD_STATUS_INFO);
-        global.setInterval(updateBuildChangesInfo,
-                           POLLING_INTERVAL_BUILD_CHANGES_INFO);
+        //global.setInterval(updateBuildChangesInfo,
+        //                   POLLING_INTERVAL_BUILD_CHANGES_INFO);
         global.setInterval(updateBuildRunningInfo,
                            POLLING_INTERVAL_BUILD_RUNNING_INFO);
         global.setInterval(blinkFailedBuilds,
@@ -41,16 +48,17 @@
         Blink failed builds.
         */
 
-        for (var i=0; i<allBuildTypes.length; i++) {
+        for (var i=0, buildsCount=allBuildTypes.length; i<buildsCount; i++) {
             var el = $('#' + allBuildTypes[i]);
 
-            if (el.hasClass(classBuildRunning) || el.hasClass(classBuildSuccess)) {
-                el.removeClass(classBuildBlink);
+            if (!el.hasClass(classBuildFailed)) {
                 continue;
-            } else if (el.hasClass(classBuildFailed)) {
-                el.removeClass(classBuildFailed).addClass(classBuildBlink);
-            } else if (el.hasClass(classBuildBlink)) {
-                el.removeClass(classBuildBlink).addClass(classBuildFailed);
+            }
+
+            if (el.css('background-color') == COLOR_RED) {
+                el.css('background-color', COLOR_GRAY);
+            } else {
+                el.css('background-color', COLOR_RED);
             }
         }
     }
@@ -96,12 +104,14 @@
 
     function updateBuildRunningInfo() {
         function onGetBuildRunningInfoSuccess(data) {;
-            var el = $('#' + this.buildTypeId);
+            var el = $('#' + this.buildTypeId),
+                buildRunning = Boolean(data.count);
 
-            if (data.count) {
+            if (buildRunning) {
                 data = data.build[0];
 
-                el.removeClass(classBuildSuccess);
+                el.removeClass(classBuildSuccess).removeClass(classBuildFailed);
+                resetCustomColor(el);
                 el.addClass(classBuildRunning);
                 el.find(selectorBuildPercentages).html('(' + data.percentageComplete + '%)');
             } else {
@@ -161,15 +171,25 @@
         */
 
         function onGetBuildStatusInfoSuccess(data) {
-            var el = $('#' + this.buildTypeId);
+            var el = $('#' + this.buildTypeId),
+                buildSuccess = data.status == 'SUCCESS';
 
-            if (data.status == 'SUCCESS') {
-                el.removeClass(classBuildFailed);
-                el.addClass(classBuildSuccess);
-            } else {
-                el.removeClass(classBuildSuccess);
-                el.addClass(classBuildFailed);
-                document.getElementById(selectorAlarm).play();
+            // do not update status for running build
+            if (el.hasClass(classBuildRunning)) {
+                return;
+            }
+
+            if (buildSuccess) {
+                if (el.hasClass(classBuildFailed)) {
+                    el.removeClass(classBuildFailed);
+                    resetCustomColor(el);
+                    el.addClass(classBuildSuccess);
+                } else if (!el.hasClass(classBuildSuccess) && !el.hasClass(classBuildFailed)) {
+                    el.addClass(classBuildSuccess);
+                }
+            } else if (!buildSuccess && !el.hasClass(classBuildFailed)) {
+                // play alarm here
+                el.removeClass(classBuildSuccess).addClass(classBuildFailed);
             }
 
             el.find(selectorBuildTitle).html(data.buildType.name);
