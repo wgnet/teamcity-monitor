@@ -18,7 +18,7 @@ progress {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    width: 100%;
+    width: 100синтезатор речи%;
     height: 15px;
     margin-top: 4px;
     margin-bottom: 2px;
@@ -62,7 +62,7 @@ progress {
     font-size: medium;
     font-style:italic;
     padding-top: 8px;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 
 .build-status-text {
