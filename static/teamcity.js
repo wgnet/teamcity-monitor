@@ -27,6 +27,11 @@
     }
 
 
+    function playAlarm() {
+        (new Howl({urls: ['static/alarm.wav']})).play();
+    }
+
+
     function setupBuildsPolling() {
         /*
         Setup timers for polling build changes.
@@ -34,8 +39,8 @@
 
         global.setInterval(updateBuildStatusInfo,
                            POLLING_INTERVAL_BUILD_STATUS_INFO);
-        //global.setInterval(updateBuildChangesInfo,
-        //                   POLLING_INTERVAL_BUILD_CHANGES_INFO);
+        global.setInterval(updateBuildChangesInfo,
+                           POLLING_INTERVAL_BUILD_CHANGES_INFO);
         global.setInterval(updateBuildRunningInfo,
                            POLLING_INTERVAL_BUILD_RUNNING_INFO);
         global.setInterval(blinkFailedBuilds,
@@ -188,8 +193,8 @@
                     el.addClass(classBuildSuccess);
                 }
             } else if (!buildSuccess && !el.hasClass(classBuildFailed)) {
-                // play alarm here
                 el.removeClass(classBuildSuccess).addClass(classBuildFailed);
+                playAlarm();
             }
 
             el.find(selectorBuildTitle).html(data.buildType.name);
