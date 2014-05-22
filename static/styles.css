@@ -68,3 +68,11 @@ progress {
 .build-status-text {
     font-size: large;
 }
+
+.build-duration {
+    font-weight: bold;
+}
+
+.build-triggered-by {
+    font-weight: bold;
+}

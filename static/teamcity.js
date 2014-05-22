@@ -2,7 +2,7 @@
     var selectorBuildTitle = '.build-title',
         selectorBuildStatusText = '.build-status-text',
         selectorBuildTriggeredBy = '.build-triggered-by',
-        selectorBuildRevision = '.build-revision',
+        selectorBuildDuration = '.build-duration',
         selectorBuildTemplate = '#build-template',
         selectorAlarm = '#alarm-sound',
 
@@ -23,6 +23,29 @@
 
     function resetCustomColor(el) {
         el.css('background-color', '');
+    }
+
+
+    function teamcityStringToDate(stringDatetime) {
+        var regexp = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\+\d{4}/,
+            elements = regexp.exec(stringDatetime).slice(1);
+
+        return new Date(elements[0], elements[1], elements[2],
+                        elements[3], elements[4], elements[5])
+    }
+
+    function getBuildDuration(startDatetime, endDatetime) {
+        /*
+        Calculate diff between 2 datetimes.
+        Return string in form: 'XX min : YY sec'.
+        */
+
+        startDatetime = teamcityStringToDate(startDatetime);
+        endDatetime = teamcityStringToDate(endDatetime);
+
+        var duration = new Date(endDatetime - startDatetime);
+
+        return [duration.getMinutes(), 'min', ':', duration.getSeconds(), 'sec'].join(' ');
     }
 
 
@@ -146,7 +169,6 @@
                 commiter = data.user ? data.user.name : data.username;
 
             el.find(selectorBuildTriggeredBy).html(commiter);
-            el.find(selectorBuildRevision).html(data.version);
         }
 
         _.each(allBuildTypes, function(buildTypeId) {
@@ -191,6 +213,8 @@
 
             el.find(selectorBuildTitle).html(data.buildType.name);
             el.find(selectorBuildStatusText).html(data.statusText);
+            el.find(selectorBuildDuration).html(getBuildDuration(data.startDate,
+                                                                 data.finishDate));
         }
 
         _.each(allBuildTypes, function(buildTypeId) {
