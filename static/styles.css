@@ -1,7 +1,11 @@
+body {
+    background: black;
+}
+
 .build {
-    border: 1px solid black;
-    padding: 8px;
-    margin: 4px;
+    border: 1px solid white;
+    padding: 7px;
+    margin: 3px;
     width: 287px;
     display: inline-block;
     overflow: hidden;
@@ -24,7 +28,7 @@
     margin-bottom: 10px;
     font-weight: bold;
     display: inline-block;
-    font-size: x-large;
+    font-size: xx-large;
 }
 
 .build-percentages {
@@ -33,6 +37,11 @@
 }
 
 .build-changes-info {
+    font-size: medium;
     font-style:italic;
-    padding-top: 5px;
+    padding-top: 8px;
+}
+
+.build-status-text {
+    font-size: large;
 }
