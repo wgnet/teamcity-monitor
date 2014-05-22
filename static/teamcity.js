@@ -28,7 +28,7 @@
 
 
     function playAlarm() {
-        (new Howl({urls: ['static/alarm.wav']})).play();
+        (new Howl({urls: ['static/alarm.mp3']})).play();
     }
 
 
