@@ -4,7 +4,6 @@
         selectorBuildTriggeredBy = '.build-triggered-by',
         selectorBuildRevision = '.build-revision',
         selectorBuildTemplate = '#build-template',
-        selectorBuildPercentages = '.build-percentages',
         selectorAlarm = '#alarm-sound',
 
         classBuildSuccess = 'build-success',
@@ -16,8 +15,8 @@
         COLOR_RED = 'rgb(255, 69, 0)',
         COLOR_GRAY = 'rgb(220, 220, 220)',
 
-        POLLING_INTERVAL_BUILD_STATUS_INFO = 8000,
-        POLLING_INTERVAL_BUILD_CHANGES_INFO = 10000,
+        POLLING_INTERVAL_BUILD_STATUS_INFO = 7000,
+        POLLING_INTERVAL_BUILD_CHANGES_INFO = 15000,
         POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000,
         POLLING_INTERVAL_BUILD_BLINKING = 1000;
 
@@ -60,11 +59,8 @@
                 continue;
             }
 
-            if (el.css('background-color') == COLOR_RED) {
-                el.css('background-color', COLOR_GRAY);
-            } else {
-                el.css('background-color', COLOR_RED);
-            }
+            var newColor = el.css('background-color') == COLOR_RED ? COLOR_GRAY : COLOR_RED;
+            el.css('background-color', newColor);
         }
     }
 
@@ -118,14 +114,14 @@
                 el.removeClass(classBuildSuccess).removeClass(classBuildFailed);
                 resetCustomColor(el);
                 el.addClass(classBuildRunning);
-                el.find(selectorBuildPercentages).html('(' + data.percentageComplete + '%)');
+                el.find(selectorBuildStatusText).hide();
+                el.find('progress').val(data.percentageComplete).show();
             } else {
                 el.removeClass(classBuildRunning);
-                el.find(selectorBuildPercentages).html('');
+                el.find(selectorBuildStatusText).show();
+                el.find('progress').hide();
             }
         }
-
-        function onGetBuildRunningInfoError(xhr, type) {}
 
         _.each(allBuildTypes, function(buildTypeId) {
             $.ajax({
@@ -133,7 +129,6 @@
                 sync: false,
                 url: '/running_builds/?buildTypeId=' + buildTypeId,
                 context: {'buildTypeId': buildTypeId},
-                error: onGetBuildRunningInfoError,
                 success: onGetBuildRunningInfoSuccess
             });
         });
@@ -154,15 +149,12 @@
             el.find(selectorBuildRevision).html(data.version);
         }
 
-        function onGetBuildChangesInfoError(xhr, type) {}
-
         _.each(allBuildTypes, function(buildTypeId) {
             $.ajax({
                 type: 'GET',
                 sync: false,
                 url: '/build_changes/?buildTypeId=' + buildTypeId,
                 context: {'buildTypeId': buildTypeId},
-                error: onGetBuildChangesInfoError,
                 success: onGetBuildChangesInfoSuccess
             });
         });
@@ -201,15 +193,12 @@
             el.find(selectorBuildStatusText).html(data.statusText);
         }
 
-        function onGetBuildStatusInfoError(xhr, type) {}
-
         _.each(allBuildTypes, function(buildTypeId) {
             $.ajax({
                 type: 'GET',
                 sync: false,
                 url: '/build_type/?buildTypeId=' + buildTypeId,
                 context: {'buildTypeId': buildTypeId},
-                error: onGetBuildStatusInfoError,
                 success: onGetBuildStatusInfoSuccess
             });
         });
