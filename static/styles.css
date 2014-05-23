@@ -66,7 +66,8 @@ progress {
 }
 
 .build-status-text {
-    font-size: large;
+    font-size: medium;
+    text-overflow: ellipsis;
 }
 
 .build-duration {
