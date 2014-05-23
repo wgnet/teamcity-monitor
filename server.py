@@ -111,6 +111,19 @@ class MonitorResource(Resource):
         return Resource.getChild(self, name, request)
 
 
+def make_factory():
+    root = MonitorResource()
+    root.putChild('build_type', BuildTypeReource())
+    root.putChild('build_changes', BuildChangesReource())
+    root.putChild('running_builds', RunningBuildsResource())
+    root.putChild('static', File('static'))
+    root.putChild('config', ConfigResource())
+
+    factory = Site(root)
+
+    return factory
+
+
 def main(args):
     parser = OptionParser(usage='%prog ARGUMENTS')
     parser.add_option('-p', '--port',
@@ -120,14 +133,7 @@ def main(args):
     if not options.port:
         parser.error('Specify TCP port to listen to')
 
-    root = MonitorResource()
-    root.putChild('build_type', BuildTypeReource())
-    root.putChild('build_changes', BuildChangesReource())
-    root.putChild('running_builds', RunningBuildsResource())
-    root.putChild('static', File('static'))
-    root.putChild('config', ConfigResource())
-
-    factory = Site(root)
+    factory = make_factory()
     reactor.listenTCP(int(options.port), factory)
     reactor.run()
 

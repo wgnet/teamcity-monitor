@@ -27,11 +27,11 @@ def deploy(port=8000):
 def start(port):
     print 'Start teamcity-monitor...'
 
-    python_path = os.path.join(VENV_DIR, 'bin', 'python')
+    twistd_path = os.path.join(VENV_DIR, 'bin', 'twistd')
 
     with nested(cd(SOURCES_DIR), prefix('. settings.env')):
-        run('dtach -n `mktemp -u /tmp/teamcity-monitor.XXX` %s server.py --port=%s' % \
-            (python_path, port))
+        run('nohup %s teamcity-monitor --logfile=teamcity-monitor.log &> /dev/null' % \
+            twistd_path)
 
 
 def stop():
