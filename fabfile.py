@@ -30,7 +30,7 @@ def start(port):
     twistd_path = os.path.join(VENV_DIR, 'bin', 'twistd')
 
     with nested(cd(SOURCES_DIR), prefix('. settings.env')):
-        run('nohup %s teamcity-monitor --logfile=teamcity-monitor.log &> /dev/null' % \
+        run('nohup %s --logfile=teamcity-monitor.log teamcity-monitor &> /dev/null' % \
             twistd_path)
 
 
