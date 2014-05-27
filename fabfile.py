@@ -30,15 +30,14 @@ def start(port):
     twistd_path = os.path.join(VENV_DIR, 'bin', 'twistd')
 
     with nested(cd(SOURCES_DIR), prefix('. settings.env')):
-        run('nohup %s --logfile=teamcity-monitor.log teamcity-monitor &> /dev/null' % \
-            twistd_path)
+        run('nohup %s teamcity-monitor &> /dev/null' % twistd_path)
 
 
 def stop():
     print 'Stop teamcity-monitor...'
 
     with nested(settings(warn_only=True), hide('everything')):
-        run("kill -9 `ps -ef | grep 'server.py' | grep -v grep | awk '{print $2}'`")
+        run("kill -9 `ps -ef | grep 'teamcity-monitor' | grep -v grep | awk '{print $2}'`")
 
 
 def purge_sources():
