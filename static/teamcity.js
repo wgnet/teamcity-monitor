@@ -1,5 +1,6 @@
 (function($, _, global) {
-    var selectorBuildTitle = '.build-title',
+    var body = null,
+        selectorBuildTitle = '.build-title',
         selectorBuildStatusText = '.build-status-text',
         selectorBuildTriggeredBy = '.build-triggered-by',
         selectorBuildDuration = '.build-duration',
@@ -18,7 +19,9 @@
         POLLING_INTERVAL_BUILD_STATUS_INFO = 7000,
         POLLING_INTERVAL_BUILD_CHANGES_INFO = 15000,
         POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000,
-        POLLING_INTERVAL_BUILD_BLINKING = 3000;
+        POLLING_INTERVAL_BUILD_BLINKING = 3000,
+
+        DATETIME_REGEXP = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\+\d{4}/;
 
 
     function resetCustomColor(el) {
@@ -27,8 +30,7 @@
 
 
     function teamcityStringToDate(stringDatetime) {
-        var regexp = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\+\d{4}/,
-            elements = regexp.exec(stringDatetime).slice(1);
+        var elements = DATETIME_REGEXP.exec(stringDatetime).slice(1);
 
         return new Date(elements[0], elements[1], elements[2],
                         elements[3], elements[4], elements[5])
@@ -40,12 +42,11 @@
         Return string in form: 'XX min : YY sec'.
         */
 
-        startDatetime = teamcityStringToDate(startDatetime);
-        endDatetime = teamcityStringToDate(endDatetime);
+        var duration = new Date(teamcityStringToDate(endDatetime) -
+                                teamcityStringToDate(startDatetime));
 
-        var duration = new Date(endDatetime - startDatetime);
-
-        return [duration.getMinutes(), 'min', ':', duration.getSeconds(), 'sec'].join(' ');
+        return [duration.getMinutes(), 'min', ':',
+                duration.getSeconds(), 'sec'].join(' ');
     }
 
 
@@ -76,7 +77,7 @@
         */
 
         for (var i=0, buildsCount=allBuildTypes.length; i<buildsCount; i++) {
-            var el = $('#' + allBuildTypes[i]);
+            var el = $('#' + allBuildTypes[i], body);
 
             if (!el.hasClass(classBuildFailed)) {
                 continue;
@@ -93,17 +94,8 @@
         Generates DOM elements for each build and updates builds info.
         */
 
-        $.ajax({
-            type: 'GET',
-            sync: true,
-            url: '/config/',
-            error: onGetConfigError,
-            success: onGetConfigSuccess
-        });
-
         function onGetConfigSuccess(data) {
-            var body = $('body'),
-                buildTemplate = _.template($(selectorBuildTemplate).html());
+            var buildTemplate = _.template($(selectorBuildTemplate).html());
 
             _.each(data.buildsLayout, function(row) {
                 _.each(row, function(buildType) {
@@ -116,19 +108,28 @@
             // immediately update builds info
             updateBuildStatusInfo();
             updateBuildChangesInfo();
+            updateBuildRunningInfo();
 
-            setupBuildsPolling()
+            setupBuildsPolling();
         }
 
         function onGetConfigError(xhr, type) {
-            $('body').html('Error: unable to initialize builds')
+            body.html('Error: unable to initialize builds')
         }
+
+        $.ajax({
+            type: 'GET',
+            sync: true,
+            url: '/config/',
+            error: onGetConfigError,
+            success: onGetConfigSuccess
+        });
     }
 
 
     function updateBuildRunningInfo() {
         function onGetBuildRunningInfoSuccess(data) {;
-            var el = $('#' + this.buildTypeId),
+            var el = $('#' + this.buildTypeId, body),
                 buildRunning = Boolean(data.count);
 
             if (buildRunning) {
@@ -165,7 +166,7 @@
         */
 
         function onGetBuildChangesInfoSuccess(data) {
-            var el = $('#' + this.buildTypeId),
+            var el = $('#' + this.buildTypeId, body),
                 commiter = data.user ? data.user.name : data.username;
 
             el.find(selectorBuildTriggeredBy).html(commiter);
@@ -190,7 +191,7 @@
         */
 
         function onGetBuildStatusInfoSuccess(data) {
-            var el = $('#' + this.buildTypeId),
+            var el = $('#' + this.buildTypeId, body),
                 buildSuccess = data.status == 'SUCCESS';
 
             // do not update status for running build
@@ -230,6 +231,7 @@
 
 
     $(document).ready(function() {
+        body = $('body');
         layoutBuilds();
     });
 
