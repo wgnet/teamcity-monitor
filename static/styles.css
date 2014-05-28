@@ -40,6 +40,34 @@ progress {
 
 .build-failed {
     background: OrangeRed;
+    animation: blink 4s linear infinite;
+    -moz-animation: blink 4s linear infinite;
+    -webkit-animation: blink 4s linear infinite;
+    -o-animation: blink 4s linear infinite;
+}
+
+@keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: rgb(220, 220, 220);}
+    100% {background: OrangeRed;}
+}
+
+@-webkit-keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: DarkGray;}
+    100% {background: OrangeRed;}
+}
+
+@-moz-keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: rgb(220, 220, 220);}
+    100% {background: OrangeRed;}
+}
+
+@-o-keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: rgb(220, 220, 220);}
+    100% {background: OrangeRed;}
 }
 
 .build-running {

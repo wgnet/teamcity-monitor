@@ -13,13 +13,9 @@
 
         allBuildTypes = [],
 
-        COLOR_RED = 'rgb(255, 69, 0)',
-        COLOR_GRAY = 'rgb(220, 220, 220)',
-
         POLLING_INTERVAL_BUILD_STATUS_INFO = 7000,
         POLLING_INTERVAL_BUILD_CHANGES_INFO = 15000,
         POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000,
-        POLLING_INTERVAL_BUILD_BLINKING = 3000,
 
         DATETIME_REGEXP = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\+\d{4}/;
 
@@ -66,26 +62,6 @@
                            POLLING_INTERVAL_BUILD_CHANGES_INFO);
         global.setInterval(updateBuildRunningInfo,
                            POLLING_INTERVAL_BUILD_RUNNING_INFO);
-        global.setInterval(blinkFailedBuilds,
-                           POLLING_INTERVAL_BUILD_BLINKING);
-    }
-
-
-    function blinkFailedBuilds() {
-        /*
-        Blink failed builds.
-        */
-
-        for (var i=0, buildsCount=allBuildTypes.length; i<buildsCount; i++) {
-            var el = $('#' + allBuildTypes[i], body);
-
-            if (!el.hasClass(classBuildFailed)) {
-                continue;
-            }
-
-            var newColor = el.css('background-color') == COLOR_RED ? COLOR_GRAY : COLOR_RED;
-            el.css('background-color', newColor);
-        }
     }
 
 
