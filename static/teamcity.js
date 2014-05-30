@@ -21,7 +21,7 @@
 
 
     function resetCustomColor(el) {
-        el.css('background-color', '');
+        el.style.background = '';
     }
 
 
@@ -114,7 +114,7 @@
 
                 el.classList.remove(classBuildSuccess);
                 el.classList.remove(classBuildFailed);
-                el.setAttribute('background-color', '');
+                resetCustomColor(el);
                 el.classList.add(classBuildRunning);
 
                 el.querySelector(selectorBuildStatusText).style.display = 'none';
@@ -173,31 +173,33 @@
         */
 
         function onGetBuildStatusInfoSuccess(data) {
-            var el = $('#' + this.buildTypeId, body),
+            var el = document.querySelector('#' + this.buildTypeId),
                 buildSuccess = data.status == 'SUCCESS';
 
             // do not update status for running build
-            if (el.hasClass(classBuildRunning)) {
+            if (el.classList.contains(classBuildRunning)) {
                 return;
             }
 
             if (buildSuccess) {
-                if (el.hasClass(classBuildFailed)) {
-                    el.removeClass(classBuildFailed);
+                if (el.classList.contains(classBuildFailed)) {
+                    el.classList.remove(classBuildFailed);
                     resetCustomColor(el);
-                    el.addClass(classBuildSuccess);
-                } else if (!el.hasClass(classBuildSuccess) && !el.hasClass(classBuildFailed)) {
-                    el.addClass(classBuildSuccess);
+                    el.classList.add(classBuildSuccess);
+                } else if (!el.classList.contains(classBuildSuccess) &&
+                           !el.classList.contains(classBuildFailed)) {
+                    el.classList.add(classBuildSuccess);
                 }
-            } else if (!buildSuccess && !el.hasClass(classBuildFailed)) {
-                el.removeClass(classBuildSuccess).addClass(classBuildFailed);
+            } else if (!buildSuccess && !el.classList.contains(classBuildFailed)) {
+                el.classList.remove(classBuildSuccess);
+                el.classList.add(classBuildFailed);
                 playAlarm();
             }
 
-            el.find(selectorBuildTitle).html(data.buildType.name);
-            el.find(selectorBuildStatusText).html(data.statusText);
-            el.find(selectorBuildDuration).html(getBuildDuration(data.startDate,
-                                                                 data.finishDate));
+            el.querySelector(selectorBuildTitle).innerHTML = data.buildType.name;
+            el.querySelector(selectorBuildStatusText).innerHTML = data.statusText;
+            el.querySelector(selectorBuildDuration).innerHTML = getBuildDuration(
+                data.startDate, data.finishDate);
         }
 
         _.each(allBuildTypes, function(buildTypeId) {
