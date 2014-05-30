@@ -1,6 +1,5 @@
 (function($, _, global) {
-    var body = null,
-        selectorBuildTitle = '.build-title',
+    var selectorBuildTitle = '.build-title',
         selectorBuildStatusText = '.build-status-text',
         selectorBuildTriggeredBy = '.build-triggered-by',
         selectorBuildDuration = '.build-duration',
@@ -71,7 +70,8 @@
         */
 
         function onGetConfigSuccess(data) {
-            var buildTemplate = _.template($(selectorBuildTemplate).html());
+            var body = $('body'),
+                buildTemplate = _.template($(selectorBuildTemplate).html());
 
             _.each(data.buildsLayout, function(row) {
                 _.each(row, function(buildType) {
@@ -216,7 +216,6 @@
 
 
     $(document).ready(function() {
-        body = $('body');
         layoutBuilds();
     });
 
