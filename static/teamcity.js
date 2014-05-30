@@ -90,7 +90,7 @@
         }
 
         function onGetConfigError(xhr, type) {
-            body.html('Error: unable to initialize builds')
+            document.write('Error: unable to initialize builds')
         }
 
         $.ajax({
@@ -144,10 +144,10 @@
         */
 
         function onGetBuildChangesInfoSuccess(data) {
-            var el = $('#' + this.buildTypeId, body),
+            var el = document.querySelector('#' + this.buildTypeId),
                 commiter = data.user ? data.user.name : data.username;
 
-            el.find(selectorBuildTriggeredBy).html(commiter);
+            el.querySelector(selectorBuildTriggeredBy).innerHTML = commiter;
         }
 
         _.each(allBuildTypes, function(buildTypeId) {
