@@ -71,11 +71,11 @@ class BaseResource(Resource):
         return server.NOT_DONE_YET
 
 
-class BuildTypeReource(BaseResource):
+class BuildTypeResource(BaseResource):
     REQUEST_URL = '%s/buildTypes/id:%s/builds/count:1'
 
 
-class BuildChangesReource(BaseResource):
+class BuildChangesResource(BaseResource):
     REQUEST_URL = '%s/changes/buildType:(id:%s)'
 
 
@@ -113,8 +113,8 @@ class MonitorResource(Resource):
 
 def make_factory():
     root = MonitorResource()
-    root.putChild('build_type', BuildTypeReource())
-    root.putChild('build_changes', BuildChangesReource())
+    root.putChild('build_type', BuildTypeResource())
+    root.putChild('build_changes', BuildChangesResource())
     root.putChild('running_builds', RunningBuildsResource())
     root.putChild('static', File('static'))
     root.putChild('config', ConfigResource())
