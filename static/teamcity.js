@@ -65,14 +65,12 @@
     }
 
 
-    function layoutBuilds() {
+    function layoutBuilds(buildTemplate) {
         /*
         Generates DOM elements for each build and updates builds info.
         */
 
         function onGetConfigSuccess(data) {
-            var buildTemplate = _.template($(selectorBuildTemplate).html());
-
             _.each(data.buildsLayout, function(row) {
                 _.each(row, function(buildType) {
                     allBuildTypes.push(buildType.id);
@@ -208,7 +206,9 @@
 
     $(document).ready(function() {
         body = $('body');
-        layoutBuilds();
+
+        var buildTemplate = _.template($(selectorBuildTemplate).html());
+        layoutBuilds(buildTemplate);
     });
 
 })(Zepto, _, window);
