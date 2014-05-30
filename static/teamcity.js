@@ -106,21 +106,24 @@
 
     function updateBuildRunningInfo() {
         function onGetBuildRunningInfoSuccess(data) {;
-            var el = $('#' + this.buildTypeId, body),
+            var el = document.querySelector('#' + this.buildTypeId),
                 buildRunning = Boolean(data.count);
 
             if (buildRunning) {
                 data = data.build[0];
 
-                el.removeClass(classBuildSuccess).removeClass(classBuildFailed);
-                resetCustomColor(el);
-                el.addClass(classBuildRunning);
-                el.find(selectorBuildStatusText).hide();
-                el.find('progress').val(data.percentageComplete).show();
+                el.classList.remove(classBuildSuccess);
+                el.classList.remove(classBuildFailed);
+                el.setAttribute('background-color', '');
+                el.classList.add(classBuildRunning);
+
+                el.querySelector(selectorBuildStatusText).style.display = 'none';
+                el.querySelector('progress').setAttribute('value', data.percentageComplete);
+                el.querySelector('progress').style.display = '';
             } else {
-                el.removeClass(classBuildRunning);
-                el.find(selectorBuildStatusText).show();
-                el.find('progress').hide();
+                el.classList.remove(classBuildRunning);
+                el.querySelector(selectorBuildStatusText).style.display = '';
+                el.querySelector('progress').style.display = 'none';
             }
         }
 
