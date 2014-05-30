@@ -96,6 +96,7 @@
         $.ajax({
             type: 'GET',
             sync: true,
+            cache: false,
             url: '/config/',
             error: onGetConfigError,
             success: onGetConfigSuccess
@@ -127,6 +128,7 @@
             $.ajax({
                 type: 'GET',
                 sync: false,
+                cache: false,
                 url: '/running_builds/?buildTypeId=' + buildTypeId,
                 context: {'buildTypeId': buildTypeId},
                 success: onGetBuildRunningInfoSuccess
@@ -152,6 +154,7 @@
             $.ajax({
                 type: 'GET',
                 sync: false,
+                cache: false,
                 url: '/build_changes/?buildTypeId=' + buildTypeId,
                 context: {'buildTypeId': buildTypeId},
                 success: onGetBuildChangesInfoSuccess
@@ -198,6 +201,7 @@
             $.ajax({
                 type: 'GET',
                 sync: false,
+                cache: false,
                 url: '/build_type/?buildTypeId=' + buildTypeId,
                 context: {'buildTypeId': buildTypeId},
                 success: onGetBuildStatusInfoSuccess
@@ -211,4 +215,4 @@
         layoutBuilds();
     });
 
-})(Zepto, _, window);
+})(jQuery, _, window);
