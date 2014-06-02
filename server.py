@@ -40,16 +40,24 @@ class BaseResource(Resource):
 
         return getPage(url=url, headers=request_headers)
 
+    def parse_arguments(self, request):
+        request._build_type_id = request.args.get('buildTypeId')[0]
+
+        return request
+
     def generate_request_url(self, request):
-        build_type_id = request.args.get('buildTypeId')[0]
         request._request_url = self.REQUEST_URL % (TEAMCITY_REST_API_URL,
-                                                   build_type_id)
+                                                   request._build_type_id)
 
         return request
 
     @defer.inlineCallbacks
     def process(self, request):
-        request._response = yield self.download_page(request._request_url)
+        response = yield self.download_page(request._request_url)
+        response = json.loads(response)
+
+        response['buildTypeId'] = request._build_type_id
+        request._response = json.dumps(response)
 
         defer.returnValue(request)
 
@@ -63,6 +71,7 @@ class BaseResource(Resource):
 
     def render_GET(self, request):
         deferred = defer.Deferred()
+        deferred.addCallback(self.parse_arguments)
         deferred.addCallback(self.generate_request_url)
         deferred.addCallback(self.process)
         deferred.addCallback(self.reply)

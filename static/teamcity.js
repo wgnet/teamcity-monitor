@@ -3,7 +3,7 @@
         selectorBuildStatusText = '.build-status-text',
         selectorBuildTriggeredBy = '.build-triggered-by',
         selectorBuildDuration = '.build-duration',
-        selectorBuildTemplate = '#build-template',
+        selectorBuildTemplate = 'build-template',
         selectorAlarm = '#alarm-sound',
 
         classBuildSuccess = 'build-success',
@@ -73,7 +73,7 @@
         function onGetConfigSuccess(data) {
             var body = document.body,
                 buildContainer = null,
-                templateHTML = document.querySelector(selectorBuildTemplate).innerHTML,
+                templateHTML = document.getElementById(selectorBuildTemplate).innerHTML,
                 buildTemplate = _.template(templateHTML);
 
             _.each(data.buildsLayout, function(row) {
@@ -113,7 +113,7 @@
 
     function updateBuildRunningInfo() {
         function onGetBuildRunningInfoSuccess(data) {;
-            var el = document.querySelector('#' + this.buildTypeId),
+            var el = document.getElementById(data.buildTypeId),
                 buildRunning = Boolean(data.count);
 
             if (buildRunning) {
@@ -140,7 +140,6 @@
                 sync: false,
                 cache: false,
                 url: '/running_builds/?buildTypeId=' + buildTypeId,
-                context: {'buildTypeId': buildTypeId},
                 success: onGetBuildRunningInfoSuccess
             });
         });
@@ -154,7 +153,7 @@
         */
 
         function onGetBuildChangesInfoSuccess(data) {
-            var el = document.querySelector('#' + this.buildTypeId),
+            var el = document.getElementById(data.buildTypeId),
                 commiter = data.user ? data.user.name : data.username;
 
             el.querySelector(selectorBuildTriggeredBy).innerHTML = commiter;
@@ -166,7 +165,6 @@
                 sync: false,
                 cache: false,
                 url: '/build_changes/?buildTypeId=' + buildTypeId,
-                context: {'buildTypeId': buildTypeId},
                 success: onGetBuildChangesInfoSuccess
             });
         });
@@ -180,7 +178,7 @@
         */
 
         function onGetBuildStatusInfoSuccess(data) {
-            var el = document.querySelector('#' + data.buildType.id),
+            var el = document.getElementById(data.buildTypeId),
                 buildSuccess = data.status == 'SUCCESS';
 
             // do not update status for running build
