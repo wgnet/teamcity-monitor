@@ -1,4 +1,4 @@
-(function(snack, _, global) {
+(function($, _, global) {
     var selectorBuildTitle = '.build-title',
         selectorBuildStatusText = '.build-status-text',
         selectorBuildTriggeredBy = '.build-triggered-by',
@@ -74,11 +74,13 @@
         Requests build types config.
         */
 
-        snack.request({
-            method: 'get',
+        $.ajax({
             async: false,
-            url: '/config/'
-        }, onGetConfigCallback);
+            cache: false,
+            url: '/config/',
+            success: onGetConfigSuccess,
+            error: onGetConfigError
+        });
     }
 
 
@@ -88,10 +90,11 @@
         */
 
         _.each(allBuildTypes, function(buildTypeId) {
-            snack.request({
-                method: 'get',
-                url: '/running_builds/?buildTypeId=' + buildTypeId
-            }, onGetBuildRunningInfoCallback);
+            $.ajax({
+                cache: false,
+                url: '/running_builds/?buildTypeId=' + buildTypeId,
+                success: onGetBuildRunningInfoSuccess
+            });
         });
     }
 
@@ -102,10 +105,11 @@
         */
 
         _.each(allBuildTypes, function(buildTypeId) {
-            snack.request({
-                method: 'get',
-                url: '/build_changes/?buildTypeId=' + buildTypeId
-            }, onGetBuildChangesInfoCallback);
+            $.ajax({
+                cache: false,
+                url: '/build_changes/?buildTypeId=' + buildTypeId,
+                success: onGetBuildChangesInfoSuccess
+            });
         });
     }
 
@@ -116,19 +120,19 @@
         */
 
         _.each(allBuildTypes, function(buildTypeId) {
-            snack.request({
-                method: 'get',
-                url: '/build_type/?buildTypeId=' + buildTypeId
-            }, onGetBuildStatusInfoCallback);
+            $.ajax({
+                cache: false,
+                url: '/build_type/?buildTypeId=' + buildTypeId,
+                success: onGetBuildStatusInfoSuccess
+            });
         });
     }
 
 
     // AJAX handlers
 
-    function onGetBuildStatusInfoCallback(error, response) {
-        var data = snack.parseJSON(response),
-            el = document.getElementById(data.buildTypeId),
+    function onGetBuildStatusInfoSuccess(data) {
+        var el = document.getElementById(data.buildTypeId),
             buildSuccess = data.status == 'SUCCESS';
 
         // do not update status for running build
@@ -158,18 +162,16 @@
     }
 
 
-    function onGetBuildChangesInfoCallback(error, response) {
-        var data = snack.parseJSON(response),
-            el = document.getElementById(data.buildTypeId),
+    function onGetBuildChangesInfoSuccess(data) {
+        var el = document.getElementById(data.buildTypeId),
             commiter = data.user ? data.user.name : data.username;
 
         el.querySelector(selectorBuildTriggeredBy).innerHTML = commiter;
     }
 
 
-    function onGetBuildRunningInfoCallback(error, response) {;
-        var data = snack.parseJSON(response),
-            el = document.getElementById(data.buildTypeId),
+    function onGetBuildRunningInfoSuccess(data) {;
+        var el = document.getElementById(data.buildTypeId),
             buildRunning = Boolean(data.count);
 
         if (buildRunning) {
@@ -191,15 +193,14 @@
     }
 
 
-    function onGetConfigCallback(error, response) {
-        if (error) {
-            document.write('Error: unable to initialize builds');
-            return;
-        }
+    function onGetConfigError(jqXHR, textStatus, errorThrown) {
+        document.write('Error: unable to initialize builds');
+    }
 
+
+    function onGetConfigSuccess(data) {
         var body = document.body,
             buildContainer = null,
-            data = snack.parseJSON(response),
             templateHTML = document.getElementById(selectorBuildTemplate).innerHTML,
             buildTemplate = _.template(templateHTML);
 
@@ -224,6 +225,6 @@
     }
 
 
-    snack.ready(layoutBuilds);
+    $(document).ready(layoutBuilds);
 
-})(snack, _, window);
+})(Zepto, _, window);
