@@ -1,4 +1,4 @@
-(function($, _, global) {
+(function(snack, _, global) {
     var selectorBuildTitle = '.build-title',
         selectorBuildStatusText = '.build-status-text',
         selectorBuildTriggeredBy = '.build-triggered-by',
@@ -74,14 +74,11 @@
         Requests build types config.
         */
 
-        $.ajax({
-            type: 'GET',
-            sync: true,
-            cache: false,
-            url: '/config/',
-            error: onGetConfigError,
-            success: onGetConfigSuccess
-        });
+        snack.request({
+            method: 'get',
+            async: false,
+            url: '/config/'
+        }, onGetConfigCallback);
     }
 
 
@@ -91,13 +88,10 @@
         */
 
         _.each(allBuildTypes, function(buildTypeId) {
-            $.ajax({
-                type: 'GET',
-                sync: false,
-                cache: false,
-                url: '/running_builds/?buildTypeId=' + buildTypeId,
-                success: onGetBuildRunningInfoSuccess
-            });
+            snack.request({
+                method: 'get',
+                url: '/running_builds/?buildTypeId=' + buildTypeId
+            }, onGetBuildRunningInfoCallback);
         });
     }
 
@@ -108,13 +102,10 @@
         */
 
         _.each(allBuildTypes, function(buildTypeId) {
-            $.ajax({
-                type: 'GET',
-                sync: false,
-                cache: false,
-                url: '/build_changes/?buildTypeId=' + buildTypeId,
-                success: onGetBuildChangesInfoSuccess
-            });
+            snack.request({
+                method: 'get',
+                url: '/build_changes/?buildTypeId=' + buildTypeId
+            }, onGetBuildChangesInfoCallback);
         });
     }
 
@@ -125,21 +116,19 @@
         */
 
         _.each(allBuildTypes, function(buildTypeId) {
-            $.ajax({
-                type: 'GET',
-                sync: false,
-                cache: false,
-                url: '/build_type/?buildTypeId=' + buildTypeId,
-                success: onGetBuildStatusInfoSuccess
-            });
+            snack.request({
+                method: 'get',
+                url: '/build_type/?buildTypeId=' + buildTypeId
+            }, onGetBuildStatusInfoCallback);
         });
     }
 
 
     // AJAX handlers
 
-    function onGetBuildStatusInfoSuccess(data) {
-        var el = document.getElementById(data.buildTypeId),
+    function onGetBuildStatusInfoCallback(error, response) {
+        var data = snack.parseJSON(response),
+            el = document.getElementById(data.buildTypeId),
             buildSuccess = data.status == 'SUCCESS';
 
         // do not update status for running build
@@ -159,7 +148,7 @@
         } else if (!buildSuccess && !el.classList.contains(classBuildFailed)) {
             el.classList.remove(classBuildSuccess);
             el.classList.add(classBuildFailed);
-            playAlarm();
+            //playAlarm();
         }
 
         el.querySelector(selectorBuildTitle).innerHTML = data.buildType.name;
@@ -169,16 +158,18 @@
     }
 
 
-    function onGetBuildChangesInfoSuccess(data) {
-        var el = document.getElementById(data.buildTypeId),
+    function onGetBuildChangesInfoCallback(error, response) {
+        var data = snack.parseJSON(response),
+            el = document.getElementById(data.buildTypeId),
             commiter = data.user ? data.user.name : data.username;
 
         el.querySelector(selectorBuildTriggeredBy).innerHTML = commiter;
     }
 
 
-    function onGetBuildRunningInfoSuccess(data) {;
-        var el = document.getElementById(data.buildTypeId),
+    function onGetBuildRunningInfoCallback(error, response) {;
+        var data = snack.parseJSON(response),
+            el = document.getElementById(data.buildTypeId),
             buildRunning = Boolean(data.count);
 
         if (buildRunning) {
@@ -200,9 +191,15 @@
     }
 
 
-    function onGetConfigSuccess(data) {
+    function onGetConfigCallback(error, response) {
+        if (error) {
+            document.write('Error: unable to initialize builds');
+            return;
+        }
+
         var body = document.body,
             buildContainer = null,
+            data = snack.parseJSON(response),
             templateHTML = document.getElementById(selectorBuildTemplate).innerHTML,
             buildTemplate = _.template(templateHTML);
 
@@ -227,13 +224,6 @@
     }
 
 
-    function onGetConfigError(xhr, type) {
-        document.write('Error: unable to initialize builds')
-    }
+    snack.ready(layoutBuilds);
 
-
-    $(document).ready(function() {
-        layoutBuilds();
-    });
-
-})(jQuery, _, window);
+})(snack, _, window);
