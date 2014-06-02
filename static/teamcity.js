@@ -9,6 +9,7 @@
         classBuildSuccess = 'build-success',
         classBuildFailed = 'build-failed',
         classBuildRunning = 'build-running',
+        classBuildContainer = 'build-container',
 
         allBuildTypes = [],
 
@@ -70,15 +71,21 @@
         */
 
         function onGetConfigSuccess(data) {
-            var body = $('body'),
-                buildTemplate = _.template($(selectorBuildTemplate).html());
+            var body = document.body,
+                buildContainer = null,
+                templateHTML = document.querySelector(selectorBuildTemplate).innerHTML,
+                buildTemplate = _.template(templateHTML);
 
             _.each(data.buildsLayout, function(row) {
                 _.each(row, function(buildType) {
                     allBuildTypes.push(buildType.id);
-                    body.append(buildTemplate(buildType));
+
+                    buildContainer = document.createElement('div');
+                    buildContainer.classList.add(classBuildContainer);
+                    buildContainer.innerHTML = buildTemplate(buildType);
+                    body.appendChild(buildContainer);
                 });
-                body.append($('<br/>'));
+                body.appendChild(document.createElement('br'));
             });
 
             // immediately update builds info
