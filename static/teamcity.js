@@ -4,7 +4,6 @@
         selectorBuildTriggeredBy = '.build-triggered-by',
         selectorBuildDuration = '.build-duration',
         selectorBuildTemplate = 'build-template',
-        selectorAlarm = '#alarm-sound',
 
         classBuildSuccess = 'build-success',
         classBuildFailed = 'build-failed',
@@ -32,6 +31,7 @@
                         elements[3], elements[4], elements[5])
     }
 
+
     function getBuildDuration(startDatetime, endDatetime) {
         /*
         Calculate diff between 2 datetimes.
@@ -47,6 +47,10 @@
 
 
     function playAlarm() {
+        /*
+        Play alarm sound when build failed.
+        */
+
         (new Howl({urls: ['static/alarm.mp3']})).play();
     }
 
@@ -67,38 +71,8 @@
 
     function layoutBuilds() {
         /*
-        Generates DOM elements for each build and updates builds info.
+        Requests build types config.
         */
-
-        function onGetConfigSuccess(data) {
-            var body = document.body,
-                buildContainer = null,
-                templateHTML = document.getElementById(selectorBuildTemplate).innerHTML,
-                buildTemplate = _.template(templateHTML);
-
-            _.each(data.buildsLayout, function(row) {
-                _.each(row, function(buildType) {
-                    allBuildTypes.push(buildType.id);
-
-                    buildContainer = document.createElement('div');
-                    buildContainer.classList.add(classBuildContainer);
-                    buildContainer.innerHTML = buildTemplate(buildType);
-                    body.appendChild(buildContainer);
-                });
-                body.appendChild(document.createElement('br'));
-            });
-
-            // immediately update builds info
-            updateBuildStatusInfo();
-            updateBuildChangesInfo();
-            updateBuildRunningInfo();
-
-            setupBuildsPolling();
-        }
-
-        function onGetConfigError(xhr, type) {
-            document.write('Error: unable to initialize builds')
-        }
 
         $.ajax({
             type: 'GET',
@@ -112,27 +86,9 @@
 
 
     function updateBuildRunningInfo() {
-        function onGetBuildRunningInfoSuccess(data) {;
-            var el = document.getElementById(data.buildTypeId),
-                buildRunning = Boolean(data.count);
-
-            if (buildRunning) {
-                data = data.build[0];
-
-                el.classList.remove(classBuildSuccess);
-                el.classList.remove(classBuildFailed);
-                resetCustomColor(el);
-                el.classList.add(classBuildRunning);
-
-                el.querySelector(selectorBuildStatusText).style.display = 'none';
-                el.querySelector('progress').setAttribute('value', data.percentageComplete);
-                el.querySelector('progress').style.display = '';
-            } else {
-                el.classList.remove(classBuildRunning);
-                el.querySelector(selectorBuildStatusText).style.display = '';
-                el.querySelector('progress').style.display = 'none';
-            }
-        }
+        /*
+        Requests build running info for each buildTypeId.
+        */
 
         _.each(allBuildTypes, function(buildTypeId) {
             $.ajax({
@@ -148,16 +104,8 @@
 
     function updateBuildChangesInfo() {
         /*
-        Requests build changes info and updates corresponding DOM element with
-        changes info.
+        Requests build changes info for each buildTypeId.
         */
-
-        function onGetBuildChangesInfoSuccess(data) {
-            var el = document.getElementById(data.buildTypeId),
-                commiter = data.user ? data.user.name : data.username;
-
-            el.querySelector(selectorBuildTriggeredBy).innerHTML = commiter;
-        }
 
         _.each(allBuildTypes, function(buildTypeId) {
             $.ajax({
@@ -173,39 +121,8 @@
 
     function updateBuildStatusInfo() {
         /*
-        Requests buildType info and updates corresponding DOM element with
-        build name, status, statusText.
+        Requests build status info for each buildTypeId.
         */
-
-        function onGetBuildStatusInfoSuccess(data) {
-            var el = document.getElementById(data.buildTypeId),
-                buildSuccess = data.status == 'SUCCESS';
-
-            // do not update status for running build
-            if (el.classList.contains(classBuildRunning)) {
-                return;
-            }
-
-            if (buildSuccess) {
-                if (el.classList.contains(classBuildFailed)) {
-                    el.classList.remove(classBuildFailed);
-                    resetCustomColor(el);
-                    el.classList.add(classBuildSuccess);
-                } else if (!el.classList.contains(classBuildSuccess) &&
-                           !el.classList.contains(classBuildFailed)) {
-                    el.classList.add(classBuildSuccess);
-                }
-            } else if (!buildSuccess && !el.classList.contains(classBuildFailed)) {
-                el.classList.remove(classBuildSuccess);
-                el.classList.add(classBuildFailed);
-                playAlarm();
-            }
-
-            el.querySelector(selectorBuildTitle).innerHTML = data.buildType.name;
-            el.querySelector(selectorBuildStatusText).innerHTML = data.statusText;
-            el.querySelector(selectorBuildDuration).innerHTML = getBuildDuration(
-                data.startDate, data.finishDate);
-        }
 
         _.each(allBuildTypes, function(buildTypeId) {
             $.ajax({
@@ -216,6 +133,102 @@
                 success: onGetBuildStatusInfoSuccess
             });
         });
+    }
+
+
+    // AJAX handlers
+
+    function onGetBuildStatusInfoSuccess(data) {
+        var el = document.getElementById(data.buildTypeId),
+            buildSuccess = data.status == 'SUCCESS';
+
+        // do not update status for running build
+        if (el.classList.contains(classBuildRunning)) {
+            return;
+        }
+
+        if (buildSuccess) {
+            if (el.classList.contains(classBuildFailed)) {
+                el.classList.remove(classBuildFailed);
+                resetCustomColor(el);
+                el.classList.add(classBuildSuccess);
+            } else if (!el.classList.contains(classBuildSuccess) &&
+                       !el.classList.contains(classBuildFailed)) {
+                el.classList.add(classBuildSuccess);
+            }
+        } else if (!buildSuccess && !el.classList.contains(classBuildFailed)) {
+            el.classList.remove(classBuildSuccess);
+            el.classList.add(classBuildFailed);
+            //playAlarm();
+        }
+
+        el.querySelector(selectorBuildTitle).innerHTML = data.buildType.name;
+        el.querySelector(selectorBuildStatusText).innerHTML = data.statusText;
+        el.querySelector(selectorBuildDuration).innerHTML = getBuildDuration(
+            data.startDate, data.finishDate);
+    }
+
+
+    function onGetBuildChangesInfoSuccess(data) {
+        var el = document.getElementById(data.buildTypeId),
+            commiter = data.user ? data.user.name : data.username;
+
+        el.querySelector(selectorBuildTriggeredBy).innerHTML = commiter;
+    }
+
+
+    function onGetBuildRunningInfoSuccess(data) {;
+        var el = document.getElementById(data.buildTypeId),
+            buildRunning = Boolean(data.count);
+
+        if (buildRunning) {
+            data = data.build[0];
+
+            el.classList.remove(classBuildSuccess);
+            el.classList.remove(classBuildFailed);
+            resetCustomColor(el);
+            el.classList.add(classBuildRunning);
+
+            el.querySelector(selectorBuildStatusText).style.display = 'none';
+            el.querySelector('progress').setAttribute('value', data.percentageComplete);
+            el.querySelector('progress').style.display = '';
+        } else {
+            el.classList.remove(classBuildRunning);
+            el.querySelector(selectorBuildStatusText).style.display = '';
+            el.querySelector('progress').style.display = 'none';
+        }
+    }
+
+
+    function onGetConfigSuccess(data) {
+        var body = document.body,
+            buildContainer = null,
+            templateHTML = document.getElementById(selectorBuildTemplate).innerHTML,
+            buildTemplate = _.template(templateHTML);
+
+        _.each(data.buildsLayout, function(row) {
+            _.each(row, function(buildType) {
+                allBuildTypes.push(buildType.id);
+
+                buildContainer = document.createElement('div');
+                buildContainer.classList.add(classBuildContainer);
+                buildContainer.innerHTML = buildTemplate(buildType);
+                body.appendChild(buildContainer);
+            });
+            body.appendChild(document.createElement('br'));
+        });
+
+        // immediately update builds info
+        updateBuildStatusInfo();
+        updateBuildChangesInfo();
+        updateBuildRunningInfo();
+
+        setupBuildsPolling();
+    }
+
+
+    function onGetConfigError(xhr, type) {
+        document.write('Error: unable to initialize builds')
     }
 
 
