@@ -54,7 +54,7 @@ def upload_sources():
 
     with nested(hide('commands'), settings(warn_only=True)):
         local('rm -rf %s' % tarball)
-        local('tar --exclude="*.pyc" -cf %s .' % tarball)
+        local('tar --exclude="*.pyc" --exclude="sources.tar" -cf %s .' % tarball)
 
         run('mkdir -p %s' % SOURCES_DIR)
         put(tarball, SOURCES_DIR)
