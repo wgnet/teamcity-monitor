@@ -159,7 +159,7 @@
         } else if (!buildSuccess && !el.classList.contains(classBuildFailed)) {
             el.classList.remove(classBuildSuccess);
             el.classList.add(classBuildFailed);
-            //playAlarm();
+            playAlarm();
         }
 
         el.querySelector(selectorBuildTitle).innerHTML = data.buildType.name;
