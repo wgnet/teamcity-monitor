@@ -180,7 +180,7 @@
         */
 
         function onGetBuildStatusInfoSuccess(data) {
-            var el = document.querySelector('#' + this.buildTypeId),
+            var el = document.querySelector('#' + data.buildType.id),
                 buildSuccess = data.status == 'SUCCESS';
 
             // do not update status for running build
@@ -215,7 +215,6 @@
                 sync: false,
                 cache: false,
                 url: '/build_type/?buildTypeId=' + buildTypeId,
-                context: {'buildTypeId': buildTypeId},
                 success: onGetBuildStatusInfoSuccess
             });
         });
