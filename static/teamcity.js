@@ -4,6 +4,7 @@
         selectorBuildTriggeredBy = '.build-triggered-by',
         selectorBuildDuration = '.build-duration',
         selectorBuildTemplate = 'build-template',
+        selectorBuildCoverage = '.build-coverage',
 
         classBuildSuccess = 'build-success',
         classBuildFailed = 'build-failed',
@@ -11,16 +12,28 @@
         classBuildContainer = 'build-container',
 
         allBuildTypes = [],
+        coverageBuildTypes = [],
 
         POLLING_INTERVAL_BUILD_STATUS_INFO = 7000,
         POLLING_INTERVAL_BUILD_CHANGES_INFO = 15000,
         POLLING_INTERVAL_BUILD_RUNNING_INFO = 3000,
+        POLLING_INTERVAL_BUILD_STATISTICS_INFO = 15000,
 
         DATETIME_REGEXP = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})\+\d{4}/;
 
 
     function resetCustomColor(el) {
         el.style.background = '';
+    }
+
+
+    function updateCoverageInfo(el, data) {
+        var coverageProperty = _.find(data.property, function(property) {
+            return property.name == 'CodeCoverageL';
+        });
+
+        el.querySelector(selectorBuildCoverage).innerHTML = Math.round(
+            coverageProperty.value, 2).toString() + '%';
     }
 
 
@@ -66,6 +79,8 @@
                            POLLING_INTERVAL_BUILD_CHANGES_INFO);
         global.setInterval(updateBuildRunningInfo,
                            POLLING_INTERVAL_BUILD_RUNNING_INFO);
+        global.setInterval(updateBuildStatisticsInfo,
+                           POLLING_INTERVAL_BUILD_STATISTICS_INFO);
     }
 
 
@@ -124,6 +139,20 @@
                 cache: false,
                 url: '/build_type/?buildTypeId=' + buildTypeId,
                 success: onGetBuildStatusInfoSuccess
+            });
+        });
+    }
+
+    function updateBuildStatisticsInfo() {
+        /*
+        Requests build statistics info for each buildTypeId.
+        */
+
+        _.each(coverageBuildTypes, function(buildTypeId) {
+            $.ajax({
+                cache: false,
+                url: '/build_statistics/?buildTypeId=' + buildTypeId,
+                success: onGetBuildStatisticsInfoSuccess
             });
         });
     }
@@ -208,6 +237,10 @@
             _.each(row, function(buildType) {
                 allBuildTypes.push(buildType.id);
 
+                if (_.contains(data.coverageBuilds, buildType.id)) {
+                    coverageBuildTypes.push(buildType.id);
+                }
+
                 buildContainer = document.createElement('div');
                 buildContainer.classList.add(classBuildContainer);
                 buildContainer.innerHTML = buildTemplate(buildType);
@@ -220,8 +253,16 @@
         updateBuildStatusInfo();
         updateBuildChangesInfo();
         updateBuildRunningInfo();
+        updateBuildStatisticsInfo();
 
         setupBuildsPolling();
+    }
+
+
+    function onGetBuildStatisticsInfoSuccess(data) {
+        var el = document.getElementById(data.buildTypeId);
+
+        updateCoverageInfo(el, data);
     }
 
 

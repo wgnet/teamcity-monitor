@@ -5,3 +5,7 @@ BUILDS_LAYOUT = [
     [{'id': 'Wgnps_Pep8psui'}, {'id': 'Wgnps_UnittestTrunkPsui'}, {'id': 'Wgnps_UnittestStablePsui'}, {'id': 'StagingBuilds_Pss_PssxSnd'}],
     [{'id': 'Wgnps_Pep8psfc'}, {'id': 'Wgnps_UnittestPsfc'}, {'id': 'StagingBuilds_Psa_PsaSnd'}, {'id': 'StagingBuilds_Pso_PsoSnd'}],
 ]
+
+COVERAGE_BUILDS = ['bt362', 'bt360', 'bt363', 'Wgnps_UnittestTrunkPsui',
+                   'Wgnps_UnittestPsfc', 'Wgnps_UnittestStablePso',
+                   'Wgnps_UnittestStablePss', 'Wgnps_UnittestStablePsui']

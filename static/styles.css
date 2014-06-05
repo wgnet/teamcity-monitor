@@ -80,9 +80,17 @@ progress {
 
 .build-title {
     font-weight: bold;
-    font-size: xx-large;
+    font-size: 190%;
     display: inline-block;
     margin-bottom: 12px;
+}
+
+.build-coverage {
+    float: right;
+    display: table-cell;
+    color: red;
+    font-weight: bold;
+    font-size: 110%;;
 }
 
 .build-percentages {

@@ -92,9 +92,16 @@ class RunningBuildsResource(BaseResource):
     REQUEST_URL = '%s/buildTypes/id:%s/builds/?locator=running:true'
 
 
+class BuildStatisticsResource(BaseResource):
+    REQUEST_URL = '%s/builds/buildType:%s/statistics/'
+
+
 class ConfigResource(BaseResource):
     def prepare_config(self, request):
-        request._response = json.dumps({'buildsLayout': config.BUILDS_LAYOUT})
+        request._response = json.dumps({
+            'buildsLayout': config.BUILDS_LAYOUT,
+            'coverageBuilds': config.COVERAGE_BUILDS
+        })
 
         return request
 
@@ -125,6 +132,7 @@ def make_factory():
     root.putChild('build_type', BuildTypeResource())
     root.putChild('build_changes', BuildChangesResource())
     root.putChild('running_builds', RunningBuildsResource())
+    root.putChild('build_statistics', BuildStatisticsResource())
     root.putChild('static', File('static'))
     root.putChild('config', ConfigResource())
 
