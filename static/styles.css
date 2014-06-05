@@ -89,7 +89,6 @@ progress {
     float: right;
     display: table-cell;
     color: red;
-    font-weight: bold;
     font-size: 110%;;
 }
 
