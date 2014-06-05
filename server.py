@@ -65,7 +65,9 @@ class BaseResource(Resource):
         request.setResponseCode(200)
         request.setHeader('Content-Type', 'application/json')
         request.write(request._response)
-        request.finish()
+
+        if not request.finished:
+            request.finish()
 
         return request
 
