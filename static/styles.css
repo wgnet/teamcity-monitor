@@ -1,0 +1,119 @@
+body {
+    background: black;
+}
+
+::-webkit-progress-bar {
+    background: white;
+}
+::-webkit-progress-value {
+    background: DeepSkyBlue;
+}
+::-moz-progress-bar {
+    background: white;
+}
+progress {
+    display: block;
+    color: DeepSkyBlue;
+    border: 1px solid black;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    height: 14px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.build {
+    border: 1px solid white;
+    padding: 7px;
+    margin: 3px;
+    width: 292px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.build-container {
+    display: inline-block;
+}
+
+.build-success {
+    background: LawnGreen;
+}
+
+.build-failed {
+    background: OrangeRed;
+    animation: blink 4s linear infinite;
+    -moz-animation: blink 4s linear infinite;
+    -webkit-animation: blink 4s linear infinite;
+    -o-animation: blink 4s linear infinite;
+}
+
+@keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: rgb(220, 220, 220);}
+    100% {background: OrangeRed;}
+}
+
+@-webkit-keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: DarkGray;}
+    100% {background: OrangeRed;}
+}
+
+@-moz-keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: rgb(220, 220, 220);}
+    100% {background: OrangeRed;}
+}
+
+@-o-keyframes blink {
+    0% {background: OrangeRed;}
+    50% {background: rgb(220, 220, 220);}
+    100% {background: OrangeRed;}
+}
+
+.build-running {
+    background: gold;
+}
+
+.build-title {
+    font-weight: bold;
+    font-size: 190%;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.build-coverage {
+    float: right;
+    display: table-cell;
+    color: red;
+    font-weight: bold;
+    font-size: 110%;;
+}
+
+.build-percentages {
+    display: inline-block;
+    font-size: large;
+}
+
+.build-changes-info {
+    font-size: medium;
+    font-style:italic;
+    padding-top: 8px;
+    margin-bottom: 2px;
+}
+
+.build-status-text {
+    font-size: medium;
+    text-overflow: ellipsis;
+}
+
+.build-duration {
+    font-weight: bold;
+}
+
+.build-triggered-by {
+    font-weight: bold;
+}

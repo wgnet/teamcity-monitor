@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="refresh" content="3600">
+
+        <link rel="stylesheet" href="static/styles.css">
+        <script type="text/javascript" src="static/zepto.js"></script>
+        <script type="text/javascript" src="static/howler.js"></script>
+        <script type="text/javascript" src="static/underscore.js"></script>
+        <script type="text/javascript" src="static/teamcity.js"></script>
+        <audio id="alarm-sound" src="static/alarm.wav" preload="auto"></audio>
+    </head>
+
+    <body></body>
+
+    <script id="build-template" type="text/template">
+        <div id="<%= id %>" class="build">
+            <div class="build-status-info">
+                <div class="build-title"></div>
+                <div class="build-coverage"></div>
+                <progress value="0" max="100" style="display:none;"></progress>
+                <div class="build-status-text"></div>
+            </div>
+
+            <div class="build-changes-info">
+                <div>Commiter:&nbsp;<span class="build-triggered-by"></span></div>
+                <div>Duration:&nbsp;<span class="build-duration"></span></div>
+            </div>
+        </div>
+    </script>
+</html>
