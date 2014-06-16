@@ -235,7 +235,9 @@
 
         _.each(data.buildsLayout, function(row) {
             _.each(row, function(buildType) {
-                allBuildTypes.push(buildType.id);
+                if (buildType.id) {
+                    allBuildTypes.push(buildType.id);
+                }
 
                 if (_.contains(data.coverageBuilds, buildType.id)) {
                     coverageBuildTypes.push(buildType.id);
@@ -243,7 +245,7 @@
 
                 buildContainer = document.createElement('div');
                 buildContainer.classList.add(classBuildContainer);
-                buildContainer.innerHTML = buildTemplate(buildType);
+                buildContainer.innerHTML = buildType.id ? buildTemplate(buildType): '';
                 body.appendChild(buildContainer);
             });
             body.appendChild(document.createElement('br'));
