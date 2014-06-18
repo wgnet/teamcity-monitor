@@ -10,4 +10,5 @@ BUILDS_LAYOUT = [
 
 COVERAGE_BUILDS = ['bt362', 'bt360', 'bt363', 'Wgnps_UnittestTrunkPsui',
                    'Wgnps_UnittestPsfc', 'Wgnps_UnittestStablePso',
-                   'Wgnps_UnittestStablePss', 'Wgnps_UnittestStablePsui']
+                   'Wgnps_UnittestStablePss', 'Wgnps_UnittestStablePsui',
+                   'Wgnps_UnittestStablePsa']
