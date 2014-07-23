@@ -25,46 +25,51 @@ TEAMCITY_URL = os.environ['TEAMCITY_URL']
 TEAMCITY_REST_API_URL = '%s/httpAuth/app/rest' % TEAMCITY_URL
 
 
+def download_page(url):
+    basic_auth = base64.encodestring('%s:%s' % (TEAMCITY_LOGIN,
+                                                TEAMCITY_PASSWORD))
+    basic_auth = basic_auth.strip()
+    request_headers = {
+        'Accept': 'application/json',
+        'Authorization': 'Basic %s' % basic_auth,
+    }
+
+    return getPage(url=url, headers=request_headers)
+
+
 class BaseResource(Resource):
     isLeaf = True
     REQUEST_URL = None
 
-    def download_page(self, url):
-        basic_auth = base64.encodestring('%s:%s' % (TEAMCITY_LOGIN,
-                                                    TEAMCITY_PASSWORD))
-        basic_auth = basic_auth.strip()
-        request_headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Basic %s' % basic_auth,
-        }
+    def generate_request_url(self, build_type_id):
+        return self.REQUEST_URL % (TEAMCITY_REST_API_URL, build_type_id)
 
-        return getPage(url=url, headers=request_headers)
+    def process_response(self, response, build_type_id):
+        try:
+            response = json.loads(response)
+        except:
+            response = {}
+        finally:
+            response['buildTypeId'] = build_type_id
+            return response
 
-    def parse_arguments(self, request):
-        request._build_type_id = request.args.get('buildTypeId')[0]
+    def generate_response_data(self, response):
+        response_data = {}
+        for success, data in response:
+            if success:
+                response_data[data['buildTypeId']] = data
 
-        return request
+        return json.dumps(response_data)
 
-    def generate_request_url(self, request):
-        request._request_url = self.REQUEST_URL % (TEAMCITY_REST_API_URL,
-                                                   request._build_type_id)
+    def get_all_build_types_id(self):
+        for row in config.BUILDS_LAYOUT:
+            for build_type in row:
+                yield build_type['id']
 
-        return request
-
-    @defer.inlineCallbacks
-    def process(self, request):
-        response = yield self.download_page(request._request_url)
-        response = json.loads(response)
-
-        response['buildTypeId'] = request._build_type_id
-        request._response = json.dumps(response)
-
-        defer.returnValue(request)
-
-    def reply(self, request):
+    def reply(self, response, request):
         request.setResponseCode(200)
         request.setHeader('Content-Type', 'application/json')
-        request.write(request._response)
+        request.write(self.generate_response_data(response))
 
         if not request.finished:
             request.finish()
@@ -72,12 +77,14 @@ class BaseResource(Resource):
         return request
 
     def render_GET(self, request):
-        deferred = defer.Deferred()
-        deferred.addCallback(self.parse_arguments)
-        deferred.addCallback(self.generate_request_url)
-        deferred.addCallback(self.process)
-        deferred.addCallback(self.reply)
-        deferred.callback(request)
+        deferreds = []
+        for build_type_id in self.get_all_build_types_id():
+            deferred = download_page(self.generate_request_url(build_type_id))
+            deferred.addCallback(self.process_response, build_type_id)
+            deferreds.append(deferred)
+
+        deferred_list = defer.DeferredList(deferreds)
+        deferred_list.addCallback(self.reply, request)
 
         return server.NOT_DONE_YET
 
@@ -97,19 +104,29 @@ class RunningBuildsResource(BaseResource):
 class BuildStatisticsResource(BaseResource):
     REQUEST_URL = '%s/builds/buildType:%s/statistics/'
 
+    def get_all_build_types_id(self):
+        return config.COVERAGE_BUILDS
+
 
 class ConfigResource(BaseResource):
-    def prepare_config(self, request):
-        request._response = json.dumps({
+    def generate_response_data(self):
+        return json.dumps({
             'buildsLayout': config.BUILDS_LAYOUT,
             'coverageBuilds': config.COVERAGE_BUILDS
         })
+
+    def reply(self, request):
+        request.setResponseCode(200)
+        request.setHeader('Content-Type', 'application/json')
+        request.write(self.generate_response_data())
+
+        if not request.finished:
+            request.finish()
 
         return request
 
     def render_GET(self, request):
         deferred = defer.Deferred()
-        deferred.addCallback(self.prepare_config)
         deferred.addCallback(self.reply)
         deferred.callback(request)
 
