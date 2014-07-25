@@ -161,6 +161,9 @@ def make_factory():
 
 
 def main(args):
+    if not all((TEAMCITY_LOGIN, TEAMCITY_PASSWORD, TEAMCITY_URL)):
+        sys.exit(u'TeamCity credentials or url not set!')
+
     parser = OptionParser(usage='%prog ARGUMENTS')
     parser.add_option('-p', '--port',
                       action='store',
