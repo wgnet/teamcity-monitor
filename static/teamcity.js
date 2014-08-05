@@ -61,7 +61,6 @@
         Play alarm sound when build failed.
         */
 
-        //(new Howl({urls: ['static/alarm.mp3']})).play();
         document.getElementById('alarm-sound').play();
     }
 
