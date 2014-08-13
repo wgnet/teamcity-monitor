@@ -35,7 +35,7 @@ progress {
 
 .build-container {
     display: inline-block;
-    width: 292px;
+    width: 16.66%;
 }
 
 .build-success {
@@ -80,7 +80,7 @@ progress {
 
 .build-title {
     font-weight: bold;
-    font-size: 190%;
+    font-size: 180%;
     display: inline-block;
     margin-bottom: 12px;
 }
