@@ -232,7 +232,7 @@
             _.each(row, function(buildType) {
                 buildContainer = document.createElement('div');
                 buildContainer.classList.add(classBuildContainer);
-                buildContainer.innerHTML = buildType.id ? buildTemplate(buildType): '';
+                buildContainer.innerHTML = buildType ? buildTemplate({'id': buildType}): '';
                 body.appendChild(buildContainer);
             });
             body.appendChild(document.createElement('br'));

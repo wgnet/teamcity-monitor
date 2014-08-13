@@ -64,7 +64,7 @@ class BaseResource(Resource):
     def get_all_build_types_id(self):
         for row in config.BUILDS_LAYOUT:
             for build_type in row:
-                yield build_type['id']
+                yield build_type
 
     def reply(self, response, request):
         request.setResponseCode(200)
